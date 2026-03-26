@@ -1,0 +1,68 @@
+# ========================
+# Maven
+# ========================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ========================
+# IntelliJ IDEA
+# ========================
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# ========================
+# Eclipse
+# ========================
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+
+# ========================
+# VS Code
+# ========================
+.vscode/
+
+# ========================
+# macOS
+# ========================
+.DS_Store
+*.swp
+*~
+
+# ========================
+# Logs
+# ========================
+*.log
+logs/
+
+# ========================
+# Java / Spring Boot
+# ========================
+*.class
+*.jar
+*.war
+*.ear
+
+# ========================
+# Variables de entorno
+# ========================
+.env
+*.env
+
+# ========================
+# H2 Database files
+# ========================
+*.db
+*.mv.db
+*.trace.db
+
