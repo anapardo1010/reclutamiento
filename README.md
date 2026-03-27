@@ -7,6 +7,8 @@ Proyecto de reclutamiento desarrollado con Spring Boot.
 ```
 src/main/java/com/reclutamiento/
 ├── ReclutamientoApplication.java       # Clase principal
+├── config/                             # Configuración general
+│   └── OpenApiConfig.java
 ├── entity/                             # Entidades JPA
 │   └── Candidato.java
 ├── repositorio/                        # Repositorios (acceso a datos)
@@ -15,9 +17,10 @@ src/main/java/com/reclutamiento/
 │   └── CandidatoServicio.java
 ├── controlador/                        # Controladores REST
 │   └── CandidatoControlador.java
-└── modelo/                             # DTOs y modelos de respuesta
-    ├── CandidatoDTO.java
-    └── ApiRespuesta.java
+└── modelo/                             # Modelos de request y respuesta
+    ├── CandidatoModel.java
+    ├── CandidatoCreateModel.java
+    └── ResponseModel.java
 ```
 
 ## Requisitos
@@ -33,25 +36,29 @@ src/main/java/com/reclutamiento/
 
 ## Endpoints
 
-| Método | URL                              | Descripción               |
-|--------|----------------------------------|---------------------------|
-| GET    | /api/candidatos                  | Obtener todos             |
-| GET    | /api/candidatos/{id}             | Obtener por ID            |
-| POST   | /api/candidatos                  | Crear candidato           |
-| PUT    | /api/candidatos/{id}             | Actualizar candidato      |
-| DELETE | /api/candidatos/{id}             | Eliminar candidato        |
-| GET    | /api/candidatos/estado/{estado}  | Filtrar por estado        |
-| GET    | /api/candidatos/puesto/{puesto}  | Filtrar por puesto        |
+| Método | URL                          | Descripción                      |
+|--------|------------------------------|----------------------------------|
+| GET    | /api/v1/candidatos           | Obtener todos los candidatos     |
+| GET    | /api/v1/candidatos/{id}      | Buscar candidato por ID          |
+| POST   | /api/v1/candidatos           | Crear un nuevo candidato         |
 
 ## Base de datos
 
-Por defecto usa **H2** en memoria. La consola H2 está disponible en `/h2-console`.
+Por defecto usa **H2** en memoria. Los datos **se borran cada vez que se reinicia la aplicación**.
+
+La consola H2 está disponible en: `http://localhost:8080/h2-console`
+
+| Campo        | Valor              |
+|--------------|--------------------|
+| JDBC URL     | `jdbc:h2:mem:testdb` |
+| Usuario      | `sa`               |
+| Contraseña   | *(vacía)*          |
 
 ## Swagger UI
 
-Si agregaste la dependencia de OpenAPI (springdoc) y ejecutas la aplicación, la documentación Swagger estará disponible en:
+La documentación interactiva de la API está disponible una vez que la aplicación esté en ejecución:
 
-- Interfaz web (Swagger UI): http://localhost:8080/swagger-ui/index.html  (también suele funcionar `/swagger-ui.html`)
-- Documentación OpenAPI (JSON): http://localhost:8080/v3/api-docs
+- **Swagger UI:** http://localhost:8080/swagger-ui/index.html
+- **OpenAPI JSON:** http://localhost:8080/v3/api-docs
 
-Nota: ajusta el puerto si tu aplicación corre en otro (por ejemplo, `8081`). Asegúrate de que la dependencia `org.springdoc:springdoc-openapi-starter-webmvc-ui` esté en el `pom.xml` y que la aplicación esté en ejecución para ver la UI.
+> Ajusta el puerto si tu aplicación corre en uno diferente (por ejemplo, `8081`).
