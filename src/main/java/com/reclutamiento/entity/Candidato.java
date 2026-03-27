@@ -1,37 +1,77 @@
 package com.reclutamiento.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+/**
+ * Entidad que representa un candidato en el sistema.
+ *
+ * @author Ana Gabriela Pardo
+ * @since 2026-03-26
+ */
 @Entity
-@Table(name = "candidatos")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Candidato {
+@Builder
+@Table(name = "candidatos",
+        indexes = {
+                @Index(name = "candidato_id_idx", columnList = "id"),
+                @Index(name = "candidato_email_idx", columnList = "correo", unique = true),
+                @Index(name = "candidato_apellido_idx", columnList = "apellido")
+        })
+public class Candidato implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String nombre;
+    @Column(name = "nombre", nullable = false)
+    private String name;
 
-    @Column(nullable = false)
-    private String apellido;
+    @Column(name = "apellido", nullable = false)
+    private String lastName;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "correo", nullable = false, unique = true)
     private String email;
 
-    private String telefono;
+    @Column(name = "telefono")
+    private String phone;
 
-    private String puesto;
+    @CreationTimestamp
+    @Column(name = "fecha_creacion")
+    private LocalDateTime createdAt;
 
-    @Column(length = 1000)
-    private String experiencia;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Candidato candidato = (Candidato) o;
+        return Objects.equals(id, candidato.id) &&
+                Objects.equals(email, candidato.email);
+    }
 
-    private String estado;
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, email);
+    }
+
+    @Override
+    public String toString() {
+        return "Candidato{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", email='" + email + '\'' +
+                '}';
+    }
 }
-

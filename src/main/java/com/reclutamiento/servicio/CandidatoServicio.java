@@ -1,56 +1,57 @@
 package com.reclutamiento.servicio;
 
-import com.reclutamiento.entity.Candidato;
+import com.reclutamiento.modelo.CandidatoCreateModel;
+import com.reclutamiento.modelo.CandidatoModel;
+import com.reclutamiento.modelo.ResponseModel;
 import com.reclutamiento.repositorio.CandidatoRepositorio;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class CandidatoServicio {
 
-    @Autowired
-    private CandidatoRepositorio candidatoRepositorio;
+    private final CandidatoRepositorio candidatoRepositorio;
 
-    public List<Candidato> obtenerTodos() {
-        return candidatoRepositorio.findAll();
+    public ResponseModel<List<CandidatoModel>> obtenerTodos() {
+        var candidatos = candidatoRepositorio.findAll()
+                .stream()
+                .map(CandidatoModel.FN_ENTITY_TO_MODEL)
+                .toList();
+
+        log.info("Consultando todos los candidatos. Total: {}", candidatos.size());
+
+        return ResponseModel.<List<CandidatoModel>>builder()
+                .message("Candidatos obtenidos correctamente")
+                .data(candidatos)
+                .build();
     }
 
-    public Optional<Candidato> obtenerPorId(Long id) {
-        return candidatoRepositorio.findById(id);
-    }
-
-    public Candidato guardar(Candidato candidato) {
-        return candidatoRepositorio.save(candidato);
-    }
-
-    public Candidato actualizar(Long id, Candidato candidatoActualizado) {
-        return candidatoRepositorio.findById(id)
-                .map(candidato -> {
-                    candidato.setNombre(candidatoActualizado.getNombre());
-                    candidato.setApellido(candidatoActualizado.getApellido());
-                    candidato.setEmail(candidatoActualizado.getEmail());
-                    candidato.setTelefono(candidatoActualizado.getTelefono());
-                    candidato.setPuesto(candidatoActualizado.getPuesto());
-                    candidato.setExperiencia(candidatoActualizado.getExperiencia());
-                    candidato.setEstado(candidatoActualizado.getEstado());
-                    return candidatoRepositorio.save(candidato);
-                })
+    public ResponseModel<CandidatoModel> obtenerPorId(Long id) {
+        var candidato = candidatoRepositorio.findById(id)
                 .orElseThrow(() -> new RuntimeException("Candidato no encontrado con id: " + id));
+
+        log.info("Candidato encontrado con id: {}", id);
+
+        return ResponseModel.<CandidatoModel>builder()
+                .message("Candidato obtenido correctamente")
+                .data(CandidatoModel.FN_ENTITY_TO_MODEL.apply(candidato))
+                .build();
     }
 
-    public void eliminar(Long id) {
-        candidatoRepositorio.deleteById(id);
-    }
+    public ResponseModel<CandidatoModel> guardar(CandidatoCreateModel createModel) {
+        var candidato = CandidatoCreateModel.FN_MODEL_TO_ENTITY.apply(createModel);
+        var guardado = candidatoRepositorio.save(candidato);
 
-    public List<Candidato> obtenerPorEstado(String estado) {
-        return candidatoRepositorio.findByEstado(estado);
-    }
+        log.info("Candidato registrado con id: {}", guardado.getId());
 
-    public List<Candidato> obtenerPorPuesto(String puesto) {
-        return candidatoRepositorio.findByPuesto(puesto);
+        return ResponseModel.<CandidatoModel>builder()
+                .message("Candidato creado correctamente")
+                .data(CandidatoModel.FN_ENTITY_TO_MODEL.apply(guardado))
+                .build();
     }
 }
-
