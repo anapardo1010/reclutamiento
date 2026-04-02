@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * @author Ana Gabriela Pardo
  * @since 2026-03-27
  */
-@RestControllerAdvice
+@RestControllerAdvice //esta clase se comporta como un controlador pero para manejar excepciones globalmente
 @Slf4j
 public class GlobalExceptionHandler {
 
