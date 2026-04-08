@@ -9,6 +9,8 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+
+
 /**
  * Entidad que representa un candidato en el sistema.
  *
@@ -34,6 +36,13 @@ public class Candidato implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column (nullable = false)
+    private Boolean activo = true;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @Column(name = "nombre", nullable = false)
     private String name;
