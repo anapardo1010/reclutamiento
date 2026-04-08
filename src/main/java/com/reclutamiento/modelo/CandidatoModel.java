@@ -17,6 +17,13 @@ import java.util.function.Function;
 public class CandidatoModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
+
+    @Schema(description = "Estado del candidato", example = "true")
+    private Boolean activo;
+
+    @Schema(description = "Fecha de última modificación")
+    private LocalDateTime updatedAt;
+
     @Schema(description = "Identificador único del candidato", example = "1")
     private Long id;
 
@@ -43,5 +50,7 @@ public class CandidatoModel implements Serializable {
                     .email(entity.getEmail())
                     .phone(entity.getPhone())
                     .createdAt(entity.getCreatedAt())
+                    .activo(entity.getActivo())        // ← nuevo
+                    .updatedAt(entity.getUpdatedAt())  // ← nuevo
                     .build();
 }
