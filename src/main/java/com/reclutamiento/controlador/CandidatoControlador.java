@@ -35,6 +35,16 @@ public class CandidatoControlador {
         return ResponseEntity.ok(candidatoServicio.obtenerTodos());
     }
 
+    @GetMapping("/activos") // Endpoint para obtener solo candidatos activos
+    @Operation(summary = "Obtener candidatos activos", description = "Retorna la lista de candidatos que están activos") // Descripción en Swagger
+    @ApiResponses(value = { // Posibles respuestas
+            @ApiResponse(responseCode = "200", description = "Candidatos activos obtenidos correctamente"), // Éxito
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor") // Error del servidor
+    })
+    public ResponseEntity<ResponseModel<List<CandidatoModel>>> obtenerActivos() { // Método que devuelve candidatos activos
+        return ResponseEntity.ok(candidatoServicio.obtenerActivos()); // Llama al servicio y devuelve el resultado
+    }
+
     @GetMapping("/{id}")
     @Operation(summary = "Buscar candidato por ID", description = "Retorna un candidato según su identificador")
     @ApiResponses(value = {
@@ -59,5 +69,34 @@ public class CandidatoControlador {
             @Parameter(description = "Datos del candidato a crear", required = true)
             @Valid @RequestBody CandidatoCreateModel createModel) {
         return new ResponseEntity<>(candidatoServicio.guardar(createModel), HttpStatus.CREATED);
+    }
+    @PatchMapping("/{id}/activo")
+    @Operation(summary = "Activar o desactivar un candidato", description = "Cambia el estado activo de un candidato")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Estado actualizado correctamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "404", description = "Candidato no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<ResponseModel<CandidatoModel>> actualizarActivo(
+            @Parameter(description = "ID del candidato", required = true, example = "1")
+            @PathVariable Long id,
+            @Parameter(description = "Nuevo estado del candidato", required = true)
+            @RequestBody Boolean activo) {
+        return ResponseEntity.ok(candidatoServicio.actualizarActivo(id, activo));
+    }
+
+    @DeleteMapping("/{id}") // Mapea las solicitudes DELETE a este método
+    @Operation(summary = "Eliminar un candidato", description = "Elimina un candidato del sistema") // Descripción en Swagger
+    @ApiResponses(value = { // Posibles respuestas
+            @ApiResponse(responseCode = "200", description = "Candidato eliminado correctamente"), // Éxito
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"), // ID inválido
+            @ApiResponse(responseCode = "404", description = "Candidato no encontrado"), // No existe el candidato
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor") // Error del servidor
+    })
+    public ResponseEntity<ResponseModel<Void>> eliminar( // Método que devuelve un ResponseModel sin datos (Void)
+            @Parameter(description = "ID del candidato", required = true, example = "1") // Descripción del parámetro
+            @PathVariable Long id) { // ID del candidato a eliminar
+        return ResponseEntity.ok(candidatoServicio.eliminar(id)); // Llama al servicio y devuelve el resultado
     }
 }
