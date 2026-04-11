@@ -1,3 +1,11 @@
+-- Asegura que la tabla `candidatos` tenga las columnas nuevas necesarias
+-- Se usan sentencias PostgreSQL "IF NOT EXISTS" para no fallar si ya existen
+ALTER TABLE candidatos
+  ADD COLUMN IF NOT EXISTS activo boolean DEFAULT true;
+
+ALTER TABLE candidatos
+  ADD COLUMN IF NOT EXISTS updated_at timestamp;
+
 -- Carga inicial de candidatos
 -- Solo inserta si no existe el registro (evita duplicados en cada reinicio)
 
