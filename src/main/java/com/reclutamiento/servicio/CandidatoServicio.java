@@ -2,100 +2,148 @@ package com.reclutamiento.servicio;
 
 import com.reclutamiento.exception.ReclutamientoBusinessException;
 import com.reclutamiento.exception.ReclutamientoNotFoundException;
+import com.reclutamiento.facade.CandidatoFacade;
 import com.reclutamiento.modelo.CandidatoCreateModel;
 import com.reclutamiento.modelo.CandidatoModel;
 import com.reclutamiento.modelo.ResponseModel;
-import com.reclutamiento.repositorio.CandidatoRepositorio;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Servicio de negocio para gestionar candidatos.
+ *
+ * Teoría breve:
+ * - Java es un lenguaje orientado a objetos donde las clases modelan entidades y comportamientos.
+ * - En aplicaciones Spring Boot, los servicios (annotados con @Service) contienen la lógica de negocio
+ *   y actúan como puente entre la capa web (controladores) y la persistencia (repositorios/facades).
+ * - Relación con POO: los servicios encapsulan comportamientos, usan abstracción e inyección de dependencias
+ *   para favorecer la separación de responsabilidades y facilitar pruebas unitarias.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CandidatoServicio {
 
-    private final CandidatoRepositorio candidatoRepositorio;
+    private final CandidatoFacade candidatoFacade;
 
-    public ResponseModel<List<CandidatoModel>> obtenerTodos() { // Esta línea declara un método público llamado obtenerTodos que no recibe parámetros y devuelve un objeto ResponseModel que contiene una lista de CandidatoModel. Este método se usa para obtener todos los candidatos.
-        var candidatos = candidatoRepositorio.findAll() // Esta línea declara una variable llamada candidatos y le asigna el resultado de llamar al método findAll() del repositorio de candidatos, que obtiene todos los candidatos de la base de datos.
-                .stream() // Esta línea convierte la lista de candidatos en un stream, que es una forma de procesar datos de manera eficiente, especialmente cuando hay muchos datos.
-                .map(CandidatoModel.FN_ENTITY_TO_MODEL) // Esta línea aplica una transformación a cada candidato en el stream, convirtiendo cada entidad Candidato (que es el objeto de la base de datos) en un CandidatoModel (que es el objeto que se envía al cliente), usando una función predefinida.
-                .toList(); // Esta línea convierte el stream de vuelta en una lista de CandidatoModel.
+    /**
+     * Obtener todos los candidatos.
+     *
+     * @return ResponseModel que contiene la lista de todos los CandidatoModel.
+     */
+    public ResponseModel<List<CandidatoModel>> obtenerTodos() {
+        var candidatos = candidatoFacade.findAll()
+                .stream()
+                .map(CandidatoModel.FN_ENTITY_TO_MODEL)
+                .toList();
 
-        log.info("Consultando todos los candidatos. Total: {}", candidatos.size()); // Esta línea registra un mensaje de información en el log, indicando que se están consultando todos los candidatos y mostrando el total de candidatos encontrados.
+        log.info("Consultando todos los candidatos. Total: {}", candidatos.size());
 
-        return ResponseModel.<List<CandidatoModel>>builder() // Esta línea comienza a construir un objeto ResponseModel que contendrá la lista de candidatos.
-                .message("Candidatos obtenidos correctamente") // Esta línea establece el mensaje del ResponseModel como "Candidatos obtenidos correctamente".
-                .data(candidatos) // Esta línea establece los datos del ResponseModel como la lista de candidatos obtenida.
-                .build(); // Esta línea finaliza la construcción del ResponseModel y lo devuelve.
+        return ResponseModel.<List<CandidatoModel>>builder()
+                .message("Candidatos obtenidos correctamente")
+                .data(candidatos)
+                .build();
     }
 
-    public ResponseModel<List<CandidatoModel>> obtenerActivos() { // Método que obtiene solo candidatos activos
-        var candidatos = candidatoRepositorio.findByActivoTrue() // Obtiene solo candidatos activos de la BD
-                .stream() // Convierte la lista en un stream
-                .map(CandidatoModel.FN_ENTITY_TO_MODEL) // Convierte cada entidad a modelo
-                .toList(); // Convierte el stream de vuelta a lista
+    /**
+     * Obtener solo los candidatos activos.
+     *
+     * @return ResponseModel con la lista de CandidatoModel activos.
+     */
+    public ResponseModel<List<CandidatoModel>> obtenerActivos() {
+        var candidatos = candidatoFacade.findAllActive()
+                .stream()
+                .map(CandidatoModel.FN_ENTITY_TO_MODEL)
+                .toList();
 
-        log.info("Consultando candidatos activos. Total: {}", candidatos.size()); // Registra en el log
+        log.info("Consultando candidatos activos. Total: {}", candidatos.size());
 
-        return ResponseModel.<List<CandidatoModel>>builder() // Construye el ResponseModel
-                .message("Candidatos activos obtenidos correctamente") // Mensaje de éxito
-                .data(candidatos) // Establece los datos
-                .build(); // Devuelve el resultado
+        return ResponseModel.<List<CandidatoModel>>builder()
+                .message("Candidatos activos obtenidos correctamente")
+                .data(candidatos)
+                .build();
     }
 
-    public ResponseModel<CandidatoModel> obtenerPorId(Long id) { // Esta línea declara un método público llamado obtenerPorId que recibe un parámetro Long llamado id y devuelve un ResponseModel con un CandidatoModel. Se usa para obtener un candidato específico por su ID.
-        if (id == null || id <= 0) { // Esta línea verifica si el id es nulo o menor o igual a cero.
-            throw new ReclutamientoBusinessException("El ID del candidato debe ser un número positivo"); // Si la condición es verdadera, lanza una excepción de negocio indicando que el ID debe ser positivo.
+    /**
+     * Obtener un candidato por su identificador.
+     *
+     * @param id Identificador del candidato.
+     * @return ResponseModel con el CandidatoModel correspondiente.
+     * @throws ReclutamientoBusinessException si el id es inválido.
+     * @throws ReclutamientoNotFoundException si no existe el candidato.
+     */
+    public ResponseModel<CandidatoModel> obtenerPorId(Long id) {
+        if (id == null || id <= 0) {
+            throw new ReclutamientoBusinessException("El ID del candidato debe ser un número positivo");
         }
 
-        var candidato = candidatoRepositorio.findById(id) // Esta línea busca un candidato en el repositorio usando el id proporcionado.
-                .orElseThrow(() -> new ReclutamientoNotFoundException("Candidato no encontrado con id: " + id)); // Si no se encuentra el candidato, lanza una excepción de no encontrado con un mensaje que incluye el id.
+        var candidato = candidatoFacade.findById(id)
+                .orElseThrow(() -> new ReclutamientoNotFoundException("Candidato no encontrado con id: " + id));
 
-        log.info("Candidato encontrado con id: {}", id); // Esta línea registra en el log que se encontró el candidato con el id especificado.
+        log.info("Candidato encontrado con id: {}", id);
 
-        return ResponseModel.<CandidatoModel>builder() // Esta línea comienza a construir un ResponseModel para devolver el candidato encontrado.
-                .message("Candidato obtenido correctamente") // Establece el mensaje como "Candidato obtenido correctamente".
-                .data(CandidatoModel.FN_ENTITY_TO_MODEL.apply(candidato)) // Convierte la entidad Candidato a CandidatoModel y la establece como los datos del ResponseModel.
-                .build(); // Finaliza la construcción y devuelve el ResponseModel.
+        return ResponseModel.<CandidatoModel>builder()
+                .message("Candidato obtenido correctamente")
+                .data(CandidatoModel.FN_ENTITY_TO_MODEL.apply(candidato))
+                .build();
     }
 
-    public ResponseModel<CandidatoModel> guardar(CandidatoCreateModel createModel) { // Esta línea declara un método público llamado guardar que recibe un CandidatoCreateModel como parámetro y devuelve un ResponseModel con un CandidatoModel. Se usa para crear y guardar un nuevo candidato.
-        if (createModel == null) { // Esta línea verifica si el createModel es nulo.
-            throw new ReclutamientoBusinessException("Los datos del candidato no pueden ser nulos"); // Si es nulo, lanza una excepción de negocio indicando que los datos no pueden ser nulos.
+    /**
+     * Crear y guardar un nuevo candidato.
+     *
+     * @param createModel Modelo con los datos necesarios para la creación.
+     * @return ResponseModel con el CandidatoModel creado.
+     * @throws ReclutamientoBusinessException si los datos son inválidos o el email ya existe.
+     */
+    public ResponseModel<CandidatoModel> guardar(CandidatoCreateModel createModel) {
+        if (createModel == null) {
+            throw new ReclutamientoBusinessException("Los datos del candidato no pueden ser nulos");
         }
 
-        if (createModel.getEmail() == null || createModel.getEmail().isBlank()) { // Esta línea verifica si el email en el createModel es nulo o está vacío.
-            throw new ReclutamientoBusinessException("El email del candidato es obligatorio"); // Si es así, lanza una excepción de negocio indicando que el email es obligatorio.
-        }
-        if (createModel.getEmail() != null && candidatoRepositorio.existsByEmail(createModel.getEmail())) { // Esta línea verifica si el email no es nulo y ya existe un candidato con ese email en el repositorio.
-            throw new ReclutamientoBusinessException("Ya existe un candidato registrado con el email: " + createModel.getEmail()); // Si es así, lanza una excepción de negocio indicando que ya existe un candidato con ese email.
+        if (createModel.getEmail() == null || createModel.getEmail().isBlank()) {
+            throw new ReclutamientoBusinessException("El email del candidato es obligatorio");
         }
 
-        var candidato = CandidatoCreateModel.FN_MODEL_TO_ENTITY.apply(createModel); // Esta línea convierte el CandidatoCreateModel en una entidad Candidato usando una función predefinida.
-        candidato.setActivo(true); // Esta línea establece automáticamente el candidato como activo cuando se crea.
-        var guardado = candidatoRepositorio.save(candidato); // Esta línea guarda la entidad Candidato en la base de datos usando el repositorio y asigna el resultado a la variable guardado.
+        if (candidatoFacade.existsByEmail(createModel.getEmail())) {
+            throw new ReclutamientoBusinessException("Ya existe un candidato registrado con el email: " + createModel.getEmail());
+        }
 
-        log.info("Candidato registrado con id: {}", guardado.getId()); // Esto es solo para mí. Esta línea registra en el log que el candidato fue registrado con su nuevo id.
+        var candidato = CandidatoCreateModel.FN_MODEL_TO_ENTITY.apply(createModel);
+        candidato.setActivo(true);
+        var guardado = candidatoFacade.save(candidato);
 
-        return ResponseModel.<CandidatoModel>builder() // Esta línea comienza a construir un ResponseModel para devolver el candidato guardado.
-                .message("Candidato creado correctamente") // Establece el mensaje como "Candidato creado correctamente".
-                .data(CandidatoModel.FN_ENTITY_TO_MODEL.apply(guardado)) // Convierte la entidad guardada a CandidatoModel y la establece como los datos.
-                .build(); // Finaliza la construcción y devuelve el ResponseModel.
+        log.info("Candidato registrado con id: {}", guardado.getId());
+
+        return ResponseModel.<CandidatoModel>builder()
+                .message("Candidato creado correctamente")
+                .data(CandidatoModel.FN_ENTITY_TO_MODEL.apply(guardado))
+                .build();
     }
+
+    /**
+     * Activar o desactivar un candidato y actualizar la fecha de modificación.
+     *
+     * @param id Identificador del candidato.
+     * @param activo Nuevo estado activo/inactivo.
+     * @return ResponseModel con el CandidatoModel actualizado.
+     * @throws ReclutamientoBusinessException si el id es inválido.
+     * @throws ReclutamientoNotFoundException si no existe el candidato.
+     */
     public ResponseModel<CandidatoModel> actualizarActivo(Long id, Boolean activo) {
         if (id == null || id <= 0) {
             throw new ReclutamientoBusinessException("El ID del candidato debe ser un número positivo");
         }
 
-        var candidato = candidatoRepositorio.findById(id)
+        var candidato = candidatoFacade.findById(id)
                 .orElseThrow(() -> new ReclutamientoNotFoundException("Candidato no encontrado con id: " + id));
 
         candidato.setActivo(activo);
-        var guardado = candidatoRepositorio.save(candidato);
+        candidato.setUpdatedAt(LocalDateTime.now());
+        var guardado = candidatoFacade.saveAndFlush(candidato);
 
         log.info("Candidato con id: {} actualizado a activo: {}", id, activo);
 
@@ -105,21 +153,29 @@ public class CandidatoServicio {
                 .build();
     }
 
-    public ResponseModel<Void> eliminar(Long id) { // Método que recibe un ID y devuelve un ResponseModel sin datos (Void)
-        if (id == null || id <= 0) { // Valida que el ID no sea nulo ni menor o igual a 0
-            throw new ReclutamientoBusinessException("El ID del candidato debe ser un número positivo"); // Lanza excepción si el ID es inválido
+    /**
+     * Eliminar un candidato por su id.
+     *
+     * @param id Identificador del candidato a eliminar.
+     * @return ResponseModel sin contenido.
+     * @throws ReclutamientoBusinessException si el id es inválido.
+     * @throws ReclutamientoNotFoundException si no existe el candidato.
+     */
+    public ResponseModel<Void> eliminar(Long id) {
+        if (id == null || id <= 0) {
+            throw new ReclutamientoBusinessException("El ID del candidato debe ser un número positivo");
         }
 
-        var candidato = candidatoRepositorio.findById(id) // Busca el candidato en la base de datos
-                .orElseThrow(() -> new ReclutamientoNotFoundException("Candidato no encontrado con id: " + id)); // Si no existe, lanza excepción
+        var candidato = candidatoFacade.findById(id)
+                .orElseThrow(() -> new ReclutamientoNotFoundException("Candidato no encontrado con id: " + id));
 
-        candidatoRepositorio.delete(candidato); // Elimina el candidato de la base de datos
+        candidatoFacade.delete(candidato);
 
-        log.info("Candidato con id: {} ha sido eliminado", id); // Registra en el log que el candidato fue eliminado
+        log.info("Candidato con id: {} ha sido eliminado", id);
 
-        return ResponseModel.<Void>builder() // Construye un ResponseModel sin datos
-                .message("Candidato eliminado correctamente") // Mensaje de éxito
-                .data(null) // Sin datos
-                .build(); // Devuelve el resultado
+        return ResponseModel.<Void>builder()
+                .message("Candidato eliminado correctamente")
+                .data(null)
+                .build();
     }
 }
